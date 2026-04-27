@@ -6,7 +6,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Whispr — Anonymous Messages</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // Load Supabase dynamically with fallback
+  (function() {
+    var s = document.createElement('script');
+    s.src = 'https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js';
+    s.onload = function() { startApp(); };
+    s.onerror = function() {
+      // Try fallback CDN
+      var s2 = document.createElement('script');
+      s2.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js';
+      s2.onload = function() { startApp(); };
+      s2.onerror = function() {
+        document.body.innerHTML = '<div style="text-align:center;padding:4rem;font-family:sans-serif;color:#b85c48"><h2>⚠️ Connection Error</h2><p style="margin-top:1rem">Could not load required scripts.<br>Please check your internet and refresh.</p></div>';
+      };
+      document.head.appendChild(s2);
+    };
+    document.head.appendChild(s);
+  })();
+</script>
 <style>
   :root {
     --ink: #2c1f1a;
@@ -1236,9 +1254,16 @@ nav { padding: 1.1rem 1.2rem; }
 
 <script>
   const SUPABASE_URL = 'https://fgtlriiksbqepcszugde.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_iGnsMNU3RF4280bIA8yIBg_29JBdmlJ';
-  const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZndGxyaWlrc2JxZXBjc3p1Z2RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNjQ1MzgsImV4cCI6MjA5Mjg0MDUzOH0.EAhBOBWCV4jZzG973f6X-ns9OzYNYgi0M-T1Af34gco';
+  function startApp() {
+    try {
+      const { createClient } = supabase;
+      db = createClient(SUPABASE_URL, SUPABASE_KEY);
+      init();
+    } catch(e) {
+      console.error('Supabase failed to init:', e);
+    }
+  }
 
   let currentUser = null, currentUsername = null, sendToUsername = null;
   let selectedSong = null, currentMode = 'msg', searchTimeout = null;
