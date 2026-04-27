@@ -5,323 +5,1038 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Whispr — Anonymous Messages</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --ink: #0e0b0b;
-    --cream: #f5f0e8;
+    --ink: #2c1f1a;
+    --cream: #f7f2ea;
+    --cream2: #ede7db;
     --blush: #e8c4b0;
-    --rose: #c4614a;
-    --muted: #8a7d72;
-    --card: #faf7f2;
-    --green: #4caf80;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--cream);
-    color: var(--ink);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
+    --blush2: #f0d5c8;
+    --rose: #b85c48;
+    --rose-light: #f5ebe8;
+    --muted: #9a8a7e;
+    --muted2: #7a6a60;
+    --card: #faf6f0;
+    --card2: #fff9f4;
+    --purple: #7c5cbf;
+    --purple-light: #ede8f7;
+    --border: rgba(44,31,26,0.1);
+    --border2: rgba(44,31,26,0.06);
+    --shadow: rgba(44,31,26,0.08);
   }
 
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(–cream);
+color: var(–ink);
+font-family: ‘DM Sans’, sans-serif;
+min-height: 100vh;
+overflow-x: hidden;
+}
+
+/* Soft noise texture overlay */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘400’ height=‘400’%3E%3Cfilter id=‘noise’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.75’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘400’ height=‘400’ filter=‘url(%23noise)’ opacity=‘0.028’/%3E%3C/svg%3E”);
+pointer-events: none;
+z-index: 0;
+}
+
+/* Decorative background blobs */
+body::after {
+content: ‘’;
+position: fixed;
+top: -200px;
+right: -200px;
+width: 600px;
+height: 600px;
+background: radial-gradient(circle, rgba(232,196,176,0.25) 0%, transparent 70%);
+pointer-events: none;
+z-index: 0;
+}
+
+/* ── NAV ── */
 nav {
 display: flex;
 justify-content: space-between;
 align-items: center;
-padding: 1.4rem 2.5rem;
-border-bottom: 1px solid rgba(0,0,0,0.08);
+padding: 1.3rem 2.5rem;
+border-bottom: 1px solid var(–border2);
 position: relative;
 z-index: 10;
+background: rgba(247,242,234,0.85);
+backdrop-filter: blur(12px);
 }
-.logo { font-family: ‘Playfair Display’, serif; font-size: 1.6rem; letter-spacing: -0.5px; }
-.logo span { color: var(–rose); font-style: italic; }
-.nav-right { display: flex; gap: 0.8rem; align-items: center; }
+
+.logo {
+display: flex;
+align-items: center;
+gap: 0.6rem;
+font-family: ‘Lora’, serif;
+font-size: 1.5rem;
+letter-spacing: -0.3px;
+color: var(–ink);
+text-decoration: none;
+}
+
+.logo-ghost {
+width: 32px;
+height: 32px;
+background: var(–blush2);
+border-radius: 50% 50% 45% 45%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1rem;
+position: relative;
+box-shadow: 0 2px 8px rgba(184,92,72,0.15);
+}
+
+.logo em { color: var(–rose); font-style: italic; }
+
+.nav-right { display: flex; gap: 0.7rem; align-items: center; }
+
 .nav-btn {
-background: var(–ink); color: var(–cream); border: none;
-padding: 0.55rem 1.3rem; font-family: ‘DM Sans’, sans-serif;
-font-size: 0.85rem; cursor: pointer; border-radius: 100px;
-transition: background 0.2s;
+background: var(–ink);
+color: var(–cream);
+border: none;
+padding: 0.5rem 1.2rem;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.83rem;
+cursor: pointer;
+border-radius: 100px;
+transition: all 0.2s;
+font-weight: 500;
+letter-spacing: 0.2px;
 }
 .nav-btn:hover { background: var(–rose); }
 .nav-btn.outline {
-background: transparent; color: var(–ink);
-border: 1.5px solid rgba(0,0,0,0.2);
+background: transparent;
+color: var(–ink);
+border: 1.5px solid var(–border);
 }
 .nav-btn.outline:hover { border-color: var(–rose); color: var(–rose); background: transparent; }
 
-/* PAGES */
+/* ── PAGES ── */
 .page { display: none; position: relative; z-index: 1; }
 .page.active { display: block; }
 
-/* LANDING */
+/* ── LANDING ── */
 .hero {
-display: grid; grid-template-columns: 1fr 1fr;
-gap: 3rem; max-width: 1100px; margin: 0 auto;
-padding: 5rem 2.5rem 3rem; align-items: center;
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 3rem;
+max-width: 1100px;
+margin: 0 auto;
+padding: 5rem 2.5rem 3rem;
+align-items: center;
 }
+
+.hero-eyebrow {
+display: inline-flex;
+align-items: center;
+gap: 0.4rem;
+background: var(–blush2);
+color: var(–rose);
+font-size: 0.72rem;
+font-weight: 500;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+padding: 0.35rem 0.9rem;
+border-radius: 100px;
+margin-bottom: 1.2rem;
+border: 1px solid rgba(184,92,72,0.15);
+}
+
 .hero-text h1 {
 font-family: ‘Playfair Display’, serif;
-font-size: clamp(2.6rem, 5vw, 4rem);
-line-height: 1.12; margin-bottom: 1.2rem; letter-spacing: -1px;
+font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+line-height: 1.14;
+margin-bottom: 1.2rem;
+letter-spacing: -0.8px;
+color: var(–ink);
 }
 .hero-text h1 em { font-style: italic; color: var(–rose); }
-.hero-text p { color: var(–muted); font-size: 1rem; line-height: 1.7; max-width: 400px; margin-bottom: 2rem; font-weight: 300; }
-.hero-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
-.btn-primary {
-background: var(–rose); color: white; border: none;
-padding: 0.8rem 2rem; font-family: ‘DM Sans’, sans-serif;
-font-size: 0.95rem; cursor: pointer; border-radius: 100px;
-font-weight: 500; transition: transform 0.15s, box-shadow 0.15s;
-box-shadow: 0 4px 20px rgba(196,97,74,0.3);
-}
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(196,97,74,0.35); }
 
-.hero-visual { position: relative; height: 380px; }
+.hero-text p {
+color: var(–muted);
+font-size: 1rem;
+line-height: 1.75;
+max-width: 400px;
+margin-bottom: 2rem;
+font-weight: 300;
+}
+
+.btn-primary {
+background: var(–rose);
+color: white;
+border: none;
+padding: 0.85rem 2rem;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.95rem;
+cursor: pointer;
+border-radius: 100px;
+font-weight: 500;
+transition: transform 0.2s, box-shadow 0.2s;
+box-shadow: 0 4px 20px rgba(184,92,72,0.28);
+letter-spacing: 0.2px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(184,92,72,0.35); }
+
+.hero-sub {
+margin-top: 1.2rem;
+font-size: 0.78rem;
+color: var(–muted);
+display: flex;
+align-items: center;
+gap: 0.5rem;
+}
+
+.features-strip {
+display: flex;
+gap: 0.8rem;
+max-width: 1100px;
+margin: 0 auto;
+padding: 0 2.5rem 5rem;
+flex-wrap: wrap;
+}
+
+.feature-pill {
+display: flex;
+align-items: center;
+gap: 0.5rem;
+background: var(–card);
+border: 1px solid var(–border2);
+border-radius: 100px;
+padding: 0.55rem 1.1rem;
+font-size: 0.82rem;
+color: var(–muted2);
+box-shadow: 0 2px 8px var(–shadow);
+font-weight: 400;
+}
+
+/* Hero visual */
+.hero-visual { position: relative; height: 400px; }
+
 .letter-card {
-position: absolute; background: var(–card);
-border: 1px solid rgba(0,0,0,0.08); border-radius: 12px;
-padding: 1.2rem 1.5rem; box-shadow: 0 8px 40px rgba(0,0,0,0.08);
-font-size: 0.88rem; line-height: 1.6; max-width: 230px;
+position: absolute;
+background: var(–card2);
+border: 1px solid var(–border2);
+border-radius: 16px;
+padding: 1.2rem 1.4rem;
+box-shadow: 0 8px 32px var(–shadow);
+font-size: 0.86rem;
+line-height: 1.6;
+max-width: 230px;
 animation: float 6s ease-in-out infinite;
 }
-.letter-card .sender { font-size: 0.72rem; color: var(–muted); margin-top: 0.7rem; font-style: italic; }
-.letter-card:nth-child(1) { top: 20px; left: 10px; animation-delay: 0s; transform: rotate(-2deg); }
-.letter-card:nth-child(2) { top: 80px; right: 0; animation-delay: 1.5s; transform: rotate(1.5deg); }
-.letter-card:nth-child(3) { bottom: 30px; left: 50px; animation-delay: 3s; transform: rotate(-1deg); }
-.letter-card .tag {
-display: inline-block; background: var(–blush); color: var(–rose);
-font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 100px;
-margin-bottom: 0.6rem; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;
+.letter-card .sender {
+font-size: 0.7rem;
+color: var(–muted);
+margin-top: 0.6rem;
+font-style: italic;
+font-family: ‘Lora’, serif;
 }
+.letter-card:nth-child(1) { top: 10px; left: 5px; animation-delay: 0s; }
+.letter-card:nth-child(2) { top: 100px; right: 0px; animation-delay: 1.8s; }
+.letter-card:nth-child(3) { bottom: 20px; left: 60px; animation-delay: 3.5s; }
+
+.tag {
+display: inline-block;
+background: var(–blush2);
+color: var(–rose);
+font-size: 0.62rem;
+padding: 0.18rem 0.6rem;
+border-radius: 100px;
+margin-bottom: 0.6rem;
+font-weight: 500;
+letter-spacing: 0.4px;
+text-transform: uppercase;
+}
+.tag.music { background: var(–purple-light); color: var(–purple); }
+.tag.photo { background: #e8f4e8; color: #4a8c4a; }
+
 @keyframes float {
-0%, 100% { transform: translateY(0) rotate(var(–r, -2deg)); }
-50% { transform: translateY(-10px) rotate(var(–r, -2deg)); }
+0%, 100% { transform: translateY(0) rotate(-1deg); }
+50% { transform: translateY(-12px) rotate(1deg); }
 }
 
-/* AUTH */
-.auth-container {
-max-width: 420px; margin: 4rem auto; padding: 0 1.5rem;
-}
+/* ── AUTH ── */
+.auth-container { max-width: 420px; margin: 4rem auto; padding: 0 1.5rem; }
+
 .auth-box {
-background: var(–card); border: 1px solid rgba(0,0,0,0.08);
-border-radius: 20px; padding: 2.5rem;
-box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+background: var(–card2);
+border: 1px solid var(–border2);
+border-radius: 24px;
+padding: 2.5rem;
+box-shadow: 0 8px 48px var(–shadow);
 }
-.auth-box h2 { font-family: ‘Playfair Display’, serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
-.auth-box p { color: var(–muted); font-size: 0.88rem; margin-bottom: 2rem; }
+
+.auth-box h2 {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.9rem;
+margin-bottom: 0.4rem;
+letter-spacing: -0.3px;
+}
+.auth-box > p { color: var(–muted); font-size: 0.88rem; margin-bottom: 2rem; line-height: 1.6; }
+
 .input-field {
-width: 100%; background: var(–cream);
-border: 1.5px solid rgba(0,0,0,0.1); border-radius: 12px;
-padding: 0.85rem 1rem; font-family: ‘DM Sans’, sans-serif;
-font-size: 0.95rem; color: var(–ink); outline: none;
-margin-bottom: 1rem; transition: border-color 0.2s;
+width: 100%;
+background: var(–cream);
+border: 1.5px solid var(–border);
+border-radius: 14px;
+padding: 0.85rem 1rem;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.93rem;
+color: var(–ink);
+outline: none;
+margin-bottom: 0.9rem;
+transition: border-color 0.2s, box-shadow 0.2s;
 }
-.input-field:focus { border-color: var(–rose); }
+.input-field:focus {
+border-color: var(–rose);
+box-shadow: 0 0 0 3px rgba(184,92,72,0.08);
+}
+
 .full-btn {
-width: 100%; background: var(–rose); color: white; border: none;
-padding: 0.9rem; border-radius: 12px; font-family: ‘DM Sans’, sans-serif;
-font-size: 0.95rem; font-weight: 500; cursor: pointer;
-transition: transform 0.15s; margin-bottom: 0.8rem;
-box-shadow: 0 4px 20px rgba(196,97,74,0.3);
-}
-.full-btn:hover { transform: translateY(-1px); }
-.full-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.full-btn.dark { background: var(–ink); box-shadow: none; }
-.full-btn.dark:hover { background: #2a1a14; }
-.auth-switch { text-align: center; font-size: 0.82rem; color: var(–muted); }
-.auth-switch a { color: var(–rose); cursor: pointer; text-decoration: none; }
-.divider { display: flex; align-items: center; gap: 0.8rem; margin: 1rem 0; }
-.divider::before, .divider::after { content: ‘’; flex: 1; height: 1px; background: rgba(0,0,0,0.1); }
-.divider span { font-size: 0.75rem; color: var(–muted); }
-
-/* SETUP USERNAME */
-.prefix-input {
-display: flex; align-items: center; background: var(–cream);
-border: 1.5px solid rgba(0,0,0,0.1); border-radius: 12px;
-margin-bottom: 1rem; overflow: hidden; transition: border-color 0.2s;
-}
-.prefix-input:focus-within { border-color: var(–rose); }
-.prefix {
-padding: 0.85rem 0.8rem 0.85rem 1rem; font-size: 0.85rem;
-color: var(–muted); white-space: nowrap;
-border-right: 1px solid rgba(0,0,0,0.08); background: rgba(0,0,0,0.02);
-}
-.prefix-input input {
-flex: 1; border: none; background: transparent;
-padding: 0.85rem 1rem; font-family: ‘DM Sans’, sans-serif;
-font-size: 0.95rem; color: var(–ink); outline: none;
-}
-
-/* INBOX */
-.app-container { max-width: 700px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
-.page-title { font-family: ‘Playfair Display’, serif; font-size: 2rem; margin-bottom: 0.4rem; letter-spacing: -0.5px; }
-.page-sub { color: var(–muted); font-size: 0.9rem; margin-bottom: 2rem; font-weight: 300; }
-
-.link-box {
-background: var(–card); border: 1px solid rgba(0,0,0,0.1);
-border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem;
-box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-}
-.link-box label { display: block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(–muted); margin-bottom: 0.6rem; font-weight: 500; }
-.link-row { display: flex; gap: 0.6rem; align-items: center; }
-.link-input {
-flex: 1; background: var(–cream); border: 1.5px solid rgba(0,0,0,0.1);
-border-radius: 10px; padding: 0.7rem 1rem; font-family: ‘DM Sans’, sans-serif;
-font-size: 0.88rem; color: var(–ink); outline: none;
-}
-.copy-btn {
-background: var(–ink); color: var(–cream); border: none;
-padding: 0.7rem 1.2rem; border-radius: 10px; font-size: 0.85rem;
-cursor: pointer; font-family: ‘DM Sans’, sans-serif; transition: background 0.2s; white-space: nowrap;
-}
-.copy-btn:hover { background: var(–rose); }
-
-.upgrade-banner {
-background: linear-gradient(135deg, var(–ink) 0%, #2a1a14 100%);
-color: var(–cream); border-radius: 16px; padding: 1.5rem 1.8rem;
-display: flex; justify-content: space-between; align-items: center;
-gap: 1rem; margin-bottom: 1.5rem;
-}
-.upgrade-banner h3 { font-family: ‘Playfair Display’, serif; font-size: 1.05rem; margin-bottom: 0.2rem; }
-.upgrade-banner p { font-size: 0.8rem; opacity: 0.65; font-weight: 300; }
-.upgrade-btn {
-background: var(–rose); color: white; border: none;
-padding: 0.6rem 1.4rem; border-radius: 100px; font-size: 0.82rem;
-font-family: ‘DM Sans’, sans-serif; font-weight: 500; cursor: pointer;
-white-space: nowrap; transition: transform 0.15s;
-}
-.upgrade-btn:hover { transform: scale(1.04); }
-
-.section-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(–muted); margin-bottom: 1rem; font-weight: 500; }
-.messages-feed { display: flex; flex-direction: column; gap: 1rem; }
-
-.msg-card {
-background: var(–card); border: 1px solid rgba(0,0,0,0.07);
-border-radius: 14px; padding: 1.4rem 1.6rem;
-box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-animation: fadeUp 0.4s ease both; position: relative; overflow: hidden;
-}
-.msg-card::before {
-content: ‘”’; position: absolute; top: -10px; left: 14px;
-font-family: ‘Playfair Display’, serif; font-size: 6rem;
-color: var(–blush); line-height: 1; pointer-events: none;
-}
-.msg-text { font-size: 0.95rem; line-height: 1.7; padding-top: 0.4rem; position: relative; z-index: 1; }
-.msg-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
-.msg-time { font-size: 0.75rem; color: var(–muted); font-style: italic; }
-.reveal-btn {
-background: var(–blush); color: var(–rose); border: none;
-padding: 0.35rem 0.9rem; border-radius: 100px; font-size: 0.75rem;
-font-family: ‘DM Sans’, sans-serif; font-weight: 500; cursor: pointer; transition: background 0.2s;
-}
-.reveal-btn:hover { background: var(–rose); color: white; }
-
-.empty-state { text-align: center; padding: 3rem 1rem; color: var(–muted); }
-.empty-state .icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
-.empty-state p { font-size: 0.9rem; line-height: 1.6; }
-
-/* SEND PAGE */
-.send-box {
-background: var(–card); border: 1px solid rgba(0,0,0,0.08);
-border-radius: 20px; padding: 2rem;
-box-shadow: 0 8px 40px rgba(0,0,0,0.06);
-}
-.recipient-badge {
-display: inline-flex; align-items: center; gap: 0.5rem;
-background: var(–blush); color: var(–rose); padding: 0.4rem 1rem;
-border-radius: 100px; font-size: 0.82rem; font-weight: 500; margin-bottom: 1.5rem;
-}
-.msg-textarea {
-width: 100%; min-height: 160px; background: var(–cream);
-border: 1.5px solid rgba(0,0,0,0.1); border-radius: 12px;
-padding: 1rem; font-family: ‘DM Sans’, sans-serif; font-size: 0.95rem;
-color: var(–ink); resize: vertical; outline: none; transition: border-color 0.2s; line-height: 1.6;
-}
-.msg-textarea:focus { border-color: var(–rose); }
-.char-count { text-align: right; font-size: 0.75rem; color: var(–muted); margin-top: 0.4rem; margin-bottom: 1.2rem; }
-.send-btn {
-width: 100%; background: var(–rose); color: white; border: none;
-padding: 0.95rem; border-radius: 12px; font-family: ‘DM Sans’, sans-serif;
-font-size: 1rem; font-weight: 500; cursor: pointer;
+width: 100%;
+background: var(–rose);
+color: white;
+border: none;
+padding: 0.9rem;
+border-radius: 14px;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.95rem;
+font-weight: 500;
+cursor: pointer;
 transition: transform 0.15s, box-shadow 0.15s;
-box-shadow: 0 4px 20px rgba(196,97,74,0.3);
+margin-bottom: 0.8rem;
+box-shadow: 0 4px 20px rgba(184,92,72,0.28);
+letter-spacing: 0.2px;
 }
-.send-btn:hover { transform: translateY(-2px); }
-.send-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.privacy-note { text-align: center; font-size: 0.78rem; color: var(–muted); margin-top: 1rem; font-style: italic; }
+.full-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(184,92,72,0.35); }
+.full-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
-.success-screen { text-align: center; padding: 4rem 1rem; }
-.success-icon { font-size: 3.5rem; margin-bottom: 1.2rem; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-.success-screen h2 { font-family: ‘Playfair Display’, serif; font-size: 1.8rem; margin-bottom: 0.6rem; }
-.success-screen p { color: var(–muted); font-size: 0.9rem; line-height: 1.6; }
-
-/* MODAL */
-.modal-overlay {
-display: none; position: fixed; inset: 0;
-background: rgba(14,11,11,0.5); z-index: 100;
-align-items: center; justify-content: center; backdrop-filter: blur(4px);
-}
-.modal-overlay.open { display: flex; }
-.modal {
-background: var(–card); border-radius: 20px; padding: 2rem;
-max-width: 380px; width: 90%; box-shadow: 0 24px 80px rgba(0,0,0,0.2);
-animation: fadeUp 0.3s ease; text-align: center;
-}
-.modal h3 { font-family: ‘Playfair Display’, serif; font-size: 1.4rem; margin-bottom: 0.5rem; }
-.modal p { color: var(–muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.5rem; }
-.modal-price { font-family: ‘Playfair Display’, serif; font-size: 2.5rem; color: var(–rose); margin-bottom: 1.5rem; }
-.modal-price span { font-size: 1rem; color: var(–muted); font-family: ‘DM Sans’, sans-serif; }
-.modal-btn {
-width: 100%; background: var(–rose); color: white; border: none;
-padding: 0.85rem; border-radius: 12px; font-family: ‘DM Sans’, sans-serif;
-font-size: 0.95rem; cursor: pointer; margin-bottom: 0.6rem; transition: transform 0.15s;
-}
-.modal-btn:hover { transform: translateY(-1px); }
-.modal-close { background: transparent; color: var(–muted); border: none; font-size: 0.82rem; cursor: pointer; font-family: ‘DM Sans’, sans-serif; padding: 0.3rem; }
-
-.back-btn {
-background: none; border: none; color: var(–muted); font-size: 0.85rem;
-cursor: pointer; font-family: ‘DM Sans’, sans-serif; padding: 0 0 1.5rem;
-display: flex; align-items: center; gap: 0.4rem; transition: color 0.2s;
-}
-.back-btn:hover { color: var(–ink); }
-
-.loading { text-align: center; padding: 3rem; color: var(–muted); }
-.spinner {
-width: 32px; height: 32px; border: 3px solid var(–blush);
-border-top-color: var(–rose); border-radius: 50%;
-animation: spin 0.8s linear infinite; margin: 0 auto 1rem;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.toast {
-position: fixed; bottom: 2rem; left: 50%;
-transform: translateX(-50%) translateY(80px);
-background: var(–ink); color: var(–cream); padding: 0.75rem 1.5rem;
-border-radius: 100px; font-size: 0.85rem; z-index: 200;
-transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
+.auth-switch { text-align: center; font-size: 0.82rem; color: var(–muted); }
+.auth-switch a { color: var(–rose); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 
 .error-msg { color: var(–rose); font-size: 0.82rem; margin-bottom: 0.8rem; text-align: center; }
 
-@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.prefix-input {
+display: flex;
+align-items: center;
+background: var(–cream);
+border: 1.5px solid var(–border);
+border-radius: 14px;
+margin-bottom: 0.9rem;
+overflow: hidden;
+transition: border-color 0.2s, box-shadow 0.2s;
+}
+.prefix-input:focus-within {
+border-color: var(–rose);
+box-shadow: 0 0 0 3px rgba(184,92,72,0.08);
+}
+.prefix {
+padding: 0.85rem 0.8rem 0.85rem 1rem;
+font-size: 0.83rem;
+color: var(–muted);
+white-space: nowrap;
+border-right: 1px solid var(–border);
+background: rgba(44,31,26,0.03);
+font-family: ‘Lora’, serif;
+font-style: italic;
+}
+.prefix-input input {
+flex: 1;
+border: none;
+background: transparent;
+padding: 0.85rem 1rem;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.93rem;
+color: var(–ink);
+outline: none;
+}
 
+/* ── APP CONTAINER ── */
+.app-container { max-width: 680px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+.page-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 2rem;
+margin-bottom: 0.4rem;
+letter-spacing: -0.5px;
+}
+.page-sub { color: var(–muted); font-size: 0.9rem; margin-bottom: 2rem; font-weight: 300; line-height: 1.6; }
+
+/* ── TABS ── */
+.tabs {
+display: flex;
+gap: 0.4rem;
+margin-bottom: 1.5rem;
+background: rgba(44,31,26,0.05);
+border-radius: 14px;
+padding: 0.3rem;
+}
+.tab-btn {
+flex: 1;
+border: none;
+background: transparent;
+padding: 0.6rem 1rem;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.83rem;
+cursor: pointer;
+border-radius: 11px;
+color: var(–muted);
+transition: all 0.2s;
+font-weight: 500;
+}
+.tab-btn.active {
+background: var(–card2);
+color: var(–ink);
+box-shadow: 0 2px 10px var(–shadow);
+}
+
+/* ── LINK BOX ── */
+.link-box {
+background: var(–card2);
+border: 1px solid var(–border2);
+border-radius: 18px;
+padding: 1.6rem;
+margin-bottom: 1.2rem;
+box-shadow: 0 4px 24px var(–shadow);
+}
+.link-box label {
+display: block;
+font-size: 0.72rem;
+text-transform: uppercase;
+letter-spacing: 1px;
+color: var(–muted);
+margin-bottom: 0.6rem;
+font-weight: 500;
+}
+.link-row { display: flex; gap: 0.6rem; align-items: center; }
+.link-input {
+flex: 1;
+background: var(–cream);
+border: 1.5px solid var(–border);
+border-radius: 11px;
+padding: 0.65rem 1rem;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.86rem;
+color: var(–ink);
+outline: none;
+}
+.copy-btn {
+background: var(–ink);
+color: var(–cream);
+border: none;
+padding: 0.65rem 1.1rem;
+border-radius: 11px;
+font-size: 0.82rem;
+cursor: pointer;
+font-family: ‘DM Sans’, sans-serif;
+transition: background 0.2s;
+white-space: nowrap;
+font-weight: 500;
+}
+.copy-btn:hover { background: var(–rose); }
+
+/* ── UPGRADE BANNER ── */
+.upgrade-banner {
+background: linear-gradient(135deg, var(–ink) 0%, #3d2218 100%);
+color: var(–cream);
+border-radius: 18px;
+padding: 1.4rem 1.6rem;
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 1rem;
+margin-bottom: 1.2rem;
+position: relative;
+overflow: hidden;
+}
+.upgrade-banner::before {
+content: ‘👻’;
+position: absolute;
+right: 100px;
+top: 50%;
+transform: translateY(-50%);
+font-size: 3rem;
+opacity: 0.07;
+}
+.upgrade-banner h3 {
+font-family: ‘Lora’, serif;
+font-size: 1rem;
+margin-bottom: 0.2rem;
+}
+.upgrade-banner p { font-size: 0.78rem; opacity: 0.6; font-weight: 300; }
+.upgrade-btn {
+background: var(–rose);
+color: white;
+border: none;
+padding: 0.55rem 1.3rem;
+border-radius: 100px;
+font-size: 0.8rem;
+font-family: ‘DM Sans’, sans-serif;
+font-weight: 500;
+cursor: pointer;
+white-space: nowrap;
+transition: transform 0.15s;
+flex-shrink: 0;
+}
+.upgrade-btn:hover { transform: scale(1.03); }
+
+/* ── MESSAGE CARDS ── */
+.messages-feed { display: flex; flex-direction: column; gap: 1rem; }
+
+.msg-card {
+background: var(–card2);
+border: 1px solid var(–border2);
+border-radius: 18px;
+padding: 1.4rem 1.6rem;
+box-shadow: 0 2px 16px var(–shadow);
+animation: fadeUp 0.4s ease both;
+position: relative;
+overflow: hidden;
+transition: box-shadow 0.2s;
+}
+.msg-card:hover { box-shadow: 0 6px 24px rgba(44,31,26,0.12); }
+.msg-card::before {
+content: ‘\201C’;
+position: absolute;
+top: -8px;
+left: 14px;
+font-family: ‘Playfair Display’, serif;
+font-size: 5.5rem;
+color: var(–blush2);
+line-height: 1;
+pointer-events: none;
+}
+.msg-text {
+font-size: 0.93rem;
+line-height: 1.75;
+padding-top: 0.4rem;
+position: relative;
+z-index: 1;
+color: var(–ink);
+}
+
+/* Photo attachment in received messages */
+.msg-photo {
+margin-top: 0.8rem;
+border-radius: 12px;
+overflow: hidden;
+max-height: 240px;
+position: relative;
+z-index: 1;
+}
+.msg-photo img {
+width: 100%;
+height: 240px;
+object-fit: cover;
+display: block;
+}
+
+.msg-meta {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 1rem;
+position: relative;
+z-index: 1;
+}
+.msg-time {
+font-size: 0.72rem;
+color: var(–muted);
+font-style: italic;
+font-family: ‘Lora’, serif;
+}
+.reveal-btn {
+background: var(–blush2);
+color: var(–rose);
+border: none;
+padding: 0.32rem 0.85rem;
+border-radius: 100px;
+font-size: 0.72rem;
+font-family: ‘DM Sans’, sans-serif;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s;
+}
+.reveal-btn:hover { background: var(–rose); color: white; }
+
+/* ── WHISPRNOTE CARD ── */
+.note-card {
+background: linear-gradient(140deg, #1a1028 0%, #2a1a3e 50%, #1e1030 100%);
+border-radius: 20px;
+padding: 1.6rem;
+box-shadow: 0 8px 32px rgba(124,92,191,0.22);
+animation: fadeUp 0.4s ease both;
+position: relative;
+overflow: hidden;
+color: white;
+transition: box-shadow 0.2s;
+}
+.note-card:hover { box-shadow: 0 12px 40px rgba(124,92,191,0.3); }
+.note-card::before {
+content: ‘♪’;
+position: absolute;
+top: -15px;
+right: 16px;
+font-size: 9rem;
+color: rgba(255,255,255,0.035);
+line-height: 1;
+pointer-events: none;
+}
+.note-card::after {
+content: ‘’;
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 2px;
+background: linear-gradient(90deg, transparent, rgba(124,92,191,0.6), transparent);
+}
+
+.note-badge {
+display: inline-flex;
+align-items: center;
+gap: 0.4rem;
+background: rgba(255,255,255,0.1);
+color: rgba(255,255,255,0.75);
+padding: 0.28rem 0.75rem;
+border-radius: 100px;
+font-size: 0.68rem;
+font-weight: 500;
+letter-spacing: 0.6px;
+text-transform: uppercase;
+margin-bottom: 1rem;
+border: 1px solid rgba(255,255,255,0.1);
+}
+
+.song-info {
+display: flex;
+align-items: center;
+gap: 0.9rem;
+margin-bottom: 1.1rem;
+background: rgba(255,255,255,0.07);
+border-radius: 14px;
+padding: 0.75rem 1rem;
+border: 1px solid rgba(255,255,255,0.07);
+}
+
+.song-art {
+width: 50px;
+height: 50px;
+border-radius: 10px;
+overflow: hidden;
+flex-shrink: 0;
+background: rgba(255,255,255,0.1);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.4rem;
+}
+.song-art img { width: 100%; height: 100%; object-fit: cover; }
+
+.song-details { flex: 1; min-width: 0; }
+.song-name { font-weight: 500; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-artist { font-size: 0.76rem; opacity: 0.55; margin-top: 0.15rem; }
+
+.play-btn {
+width: 38px;
+height: 38px;
+border-radius: 50%;
+background: var(–purple);
+border: none;
+color: white;
+font-size: 0.88rem;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+transition: transform 0.15s, background 0.15s;
+box-shadow: 0 4px 12px rgba(124,92,191,0.4);
+}
+.play-btn:hover { transform: scale(1.1); background: #6b4daa; }
+
+.note-message { font-size: 0.93rem; line-height: 1.72; opacity: 0.88; position: relative; z-index: 1; }
+
+/* Photo inside note card */
+.note-photo {
+margin-top: 0.9rem;
+margin-bottom: 0.2rem;
+border-radius: 12px;
+overflow: hidden;
+max-height: 220px;
+position: relative;
+z-index: 1;
+}
+.note-photo img { width: 100%; height: 220px; object-fit: cover; display: block; }
+
+.note-meta {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 1rem;
+}
+.note-time { font-size: 0.7rem; opacity: 0.35; font-style: italic; font-family: ‘Lora’, serif; }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 3.5rem 1rem; color: var(–muted); }
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+.empty-state p { font-size: 0.88rem; line-height: 1.65; }
+
+/* ── SEND PAGE ── */
+.send-box {
+background: var(–card2);
+border: 1px solid var(–border2);
+border-radius: 24px;
+padding: 2rem;
+box-shadow: 0 8px 40px var(–shadow);
+}
+
+.recipient-badge {
+display: inline-flex;
+align-items: center;
+gap: 0.5rem;
+background: var(–blush2);
+color: var(–rose);
+padding: 0.38rem 1rem;
+border-radius: 100px;
+font-size: 0.8rem;
+font-weight: 500;
+margin-bottom: 1.5rem;
+border: 1px solid rgba(184,92,72,0.15);
+}
+.recipient-badge.music {
+background: var(–purple-light);
+color: var(–purple);
+border-color: rgba(124,92,191,0.15);
+}
+
+.msg-textarea {
+width: 100%;
+min-height: 140px;
+background: var(–cream);
+border: 1.5px solid var(–border);
+border-radius: 14px;
+padding: 1rem;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.93rem;
+color: var(–ink);
+resize: vertical;
+outline: none;
+transition: border-color 0.2s, box-shadow 0.2s;
+line-height: 1.65;
+}
+.msg-textarea:focus {
+border-color: var(–rose);
+box-shadow: 0 0 0 3px rgba(184,92,72,0.07);
+}
+
+.char-count { text-align: right; font-size: 0.72rem; color: var(–muted); margin-top: 0.35rem; margin-bottom: 1rem; }
+
+.send-btn {
+width: 100%;
+background: var(–rose);
+color: white;
+border: none;
+padding: 0.95rem;
+border-radius: 14px;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.97rem;
+font-weight: 500;
+cursor: pointer;
+transition: transform 0.15s, box-shadow 0.15s;
+box-shadow: 0 4px 20px rgba(184,92,72,0.28);
+letter-spacing: 0.2px;
+}
+.send-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(184,92,72,0.35); }
+.send-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+.send-btn.purple { background: var(–purple); box-shadow: 0 4px 20px rgba(124,92,191,0.28); }
+.send-btn.purple:hover { box-shadow: 0 8px 28px rgba(124,92,191,0.38); }
+
+.privacy-note {
+text-align: center;
+font-size: 0.75rem;
+color: var(–muted);
+margin-top: 0.9rem;
+font-style: italic;
+font-family: ‘Lora’, serif;
+}
+
+/* ── MODE SELECTOR ── */
+.mode-selector { display: flex; gap: 0.7rem; margin-bottom: 1.5rem; }
+.mode-btn {
+flex: 1;
+border: 2px solid var(–border);
+background: var(–card2);
+border-radius: 16px;
+padding: 1rem;
+cursor: pointer;
+text-align: center;
+transition: all 0.2s;
+font-family: ‘DM Sans’, sans-serif;
+}
+.mode-btn .mode-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
+.mode-btn .mode-label { font-size: 0.82rem; font-weight: 500; color: var(–ink); }
+.mode-btn .mode-desc { font-size: 0.7rem; color: var(–muted); margin-top: 0.15rem; }
+.mode-btn.active-msg { border-color: var(–rose); background: var(–rose-light); }
+.mode-btn.active-note { border-color: var(–purple); background: var(–purple-light); }
+
+/* ── PHOTO ATTACH ── */
+.photo-attach-area {
+margin-bottom: 1rem;
+}
+
+.photo-attach-label {
+display: flex;
+align-items: center;
+gap: 0.5rem;
+font-size: 0.78rem;
+font-weight: 500;
+color: var(–muted2);
+margin-bottom: 0.5rem;
+text-transform: uppercase;
+letter-spacing: 0.6px;
+}
+
+.photo-upload-btn {
+display: flex;
+align-items: center;
+gap: 0.6rem;
+background: var(–cream);
+border: 1.5px dashed rgba(44,31,26,0.2);
+border-radius: 14px;
+padding: 0.75rem 1rem;
+cursor: pointer;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.85rem;
+color: var(–muted);
+transition: all 0.2s;
+width: 100%;
+text-align: left;
+}
+.photo-upload-btn:hover { border-color: var(–rose); color: var(–rose); background: var(–rose-light); }
+
+.photo-preview-wrap {
+position: relative;
+border-radius: 14px;
+overflow: hidden;
+background: var(–cream);
+border: 1.5px solid var(–border);
+}
+.photo-preview-wrap img {
+width: 100%;
+max-height: 200px;
+object-fit: cover;
+display: block;
+}
+.photo-remove-btn {
+position: absolute;
+top: 0.5rem;
+right: 0.5rem;
+background: rgba(44,31,26,0.7);
+border: none;
+color: white;
+width: 26px;
+height: 26px;
+border-radius: 50%;
+font-size: 0.7rem;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+backdrop-filter: blur(4px);
+transition: background 0.2s;
+}
+.photo-remove-btn:hover { background: rgba(184,92,72,0.85); }
+
+/* ── SONG SEARCH ── */
+.song-search-box {
+background: var(–cream);
+border: 1.5px solid var(–border);
+border-radius: 14px;
+overflow: hidden;
+margin-bottom: 1rem;
+transition: border-color 0.2s, box-shadow 0.2s;
+}
+.song-search-box:focus-within {
+border-color: var(–purple);
+box-shadow: 0 0 0 3px rgba(124,92,191,0.07);
+}
+.song-search-input {
+width: 100%;
+border: none;
+background: transparent;
+padding: 0.85rem 1rem;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.93rem;
+color: var(–ink);
+outline: none;
+}
+.song-results { max-height: 220px; overflow-y: auto; }
+.song-result-item {
+display: flex;
+align-items: center;
+gap: 0.8rem;
+padding: 0.65rem 1rem;
+cursor: pointer;
+transition: background 0.15s;
+border-top: 1px solid var(–border2);
+}
+.song-result-item:hover { background: rgba(124,92,191,0.05); }
+.song-result-name { font-size: 0.85rem; font-weight: 500; }
+.song-result-artist { font-size: 0.74rem; color: var(–muted); }
+
+.selected-song-preview {
+background: linear-gradient(135deg, #1a1028, #2d1f4a);
+border-radius: 14px;
+padding: 0.9rem 1.1rem;
+display: flex;
+align-items: center;
+gap: 0.8rem;
+margin-bottom: 1rem;
+color: white;
+}
+.clear-song {
+background: rgba(255,255,255,0.12);
+border: none;
+color: white;
+width: 24px;
+height: 24px;
+border-radius: 50%;
+font-size: 0.72rem;
+cursor: pointer;
+margin-left: auto;
+flex-shrink: 0;
+transition: background 0.15s;
+}
+.clear-song:hover { background: rgba(255,255,255,0.25); }
+
+/* ── SUCCESS ── */
+.success-screen { text-align: center; padding: 3.5rem 1rem; }
+.success-icon { font-size: 3.5rem; margin-bottom: 1rem; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.success-screen h2 { font-family: ‘Playfair Display’, serif; font-size: 1.75rem; margin-bottom: 0.6rem; }
+.success-screen p { color: var(–muted); font-size: 0.88rem; line-height: 1.65; }
+
+/* ── MODAL ── */
+.modal-overlay {
+display: none;
+position: fixed;
+inset: 0;
+background: rgba(20,12,8,0.45);
+z-index: 100;
+align-items: center;
+justify-content: center;
+backdrop-filter: blur(6px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+background: var(–card2);
+border-radius: 24px;
+padding: 2.2rem;
+max-width: 360px;
+width: 90%;
+box-shadow: 0 24px 80px rgba(44,31,26,0.2);
+animation: fadeUp 0.3s ease;
+text-align: center;
+border: 1px solid var(–border2);
+}
+.modal h3 { font-family: ‘Playfair Display’, serif; font-size: 1.45rem; margin-bottom: 0.5rem; }
+.modal p { color: var(–muted); font-size: 0.86rem; line-height: 1.6; margin-bottom: 1.4rem; }
+.modal-price { font-family: ‘Playfair Display’, serif; font-size: 2.4rem; color: var(–rose); margin-bottom: 1.4rem; }
+.modal-price span { font-size: 0.95rem; color: var(–muted); font-family: ‘DM Sans’, sans-serif; }
+.modal-btn {
+width: 100%;
+background: var(–rose);
+color: white;
+border: none;
+padding: 0.85rem;
+border-radius: 14px;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.93rem;
+cursor: pointer;
+margin-bottom: 0.6rem;
+font-weight: 500;
+transition: transform 0.15s;
+}
+.modal-btn:hover { transform: translateY(-1px); }
+.modal-close { background: transparent; color: var(–muted); border: none; font-size: 0.82rem; cursor: pointer; font-family: ‘DM Sans’, sans-serif; }
+
+/* ── UTILS ── */
+.back-btn {
+background: none;
+border: none;
+color: var(–muted);
+font-size: 0.84rem;
+cursor: pointer;
+font-family: ‘DM Sans’, sans-serif;
+padding: 0 0 1.5rem;
+display: flex;
+align-items: center;
+gap: 0.4rem;
+transition: color 0.2s;
+}
+.back-btn:hover { color: var(–rose); }
+
+.loading { text-align: center; padding: 3rem; color: var(–muted); }
+.spinner {
+width: 30px;
+height: 30px;
+border: 2.5px solid var(–blush);
+border-top-color: var(–rose);
+border-radius: 50%;
+animation: spin 0.8s linear infinite;
+margin: 0 auto 0.8rem;
+}
+
+.toast {
+position: fixed;
+bottom: 2rem;
+left: 50%;
+transform: translateX(-50%) translateY(80px);
+background: var(–ink);
+color: var(–cream);
+padding: 0.7rem 1.4rem;
+border-radius: 100px;
+font-size: 0.83rem;
+z-index: 200;
+transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+pointer-events: none;
+font-family: ‘DM Sans’, sans-serif;
+box-shadow: 0 8px 24px rgba(44,31,26,0.2);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+.divider {
+height: 1px;
+background: var(–border2);
+margin: 1rem 0;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+audio { display: none; }
+
+/* ── RESPONSIVE ── */
 @media (max-width: 640px) {
 .hero { grid-template-columns: 1fr; padding: 3rem 1.5rem 2rem; }
 .hero-visual { display: none; }
-nav { padding: 1.2rem 1.5rem; }
+nav { padding: 1.1rem 1.2rem; }
+.logo { font-size: 1.3rem; }
+.features-strip { padding: 0 1.5rem 3rem; }
+.app-container { padding: 2rem 1.2rem 5rem; }
 }
 </style>
 
@@ -331,14 +1046,15 @@ nav { padding: 1.2rem 1.5rem; }
 <!-- NAV -->
 
 <nav>
-  <div class="logo">Whis<span>pr</span></div>
+  <a class="logo" href="#" onclick="currentUser ? showInbox() : showPage('landing'); return false;">
+    <div class="logo-ghost">👻</div>
+    Whis<em>pr</em>
+  </a>
   <div class="nav-right" id="navRight">
     <button class="nav-btn outline" onclick="showPage('login')">Log In</button>
     <button class="nav-btn" onclick="showPage('signup')">Sign Up</button>
   </div>
 </nav>
-
-<!-- TOAST -->
 
 <div class="toast" id="toast"></div>
 
@@ -348,52 +1064,59 @@ nav { padding: 1.2rem 1.5rem; }
   <div class="modal">
     <div style="font-size:2rem;margin-bottom:0.8rem">🔍</div>
     <h3>Reveal the Sender</h3>
-    <p>Unlock who sent this message. One-time purchase — only for this message.</p>
+    <p>Unlock who sent this message. One-time purchase — yours forever.</p>
     <div class="modal-price">$0.99 <span>/ reveal</span></div>
-    <button class="modal-btn" onclick="showToast('Payment coming soon! 💳');closeModal()">Unlock Now</button>
+    <button class="modal-btn" onclick="showToast('Payment coming soon! 💳'); closeModal()">Unlock Now</button>
     <button class="modal-close" onclick="closeModal()">Maybe later</button>
   </div>
 </div>
 
-<!-- LANDING -->
+<!-- ════════════════════════════════════════ LANDING -->
 
 <div id="page-landing" class="page active">
   <div class="hero">
     <div class="hero-text">
-      <h1>Send a message, <em>stay unknown</em></h1>
-      <p>Share your link. Let anyone send you anonymous messages — heartfelt, funny, or totally mysterious.</p>
-      <div class="hero-actions">
-        <button class="btn-primary" onclick="showPage('signup')">Create My Link</button>
-      </div>
+      <div class="hero-eyebrow">👻 anonymous messaging</div>
+      <h1>Say what you feel,<br><em>stay a ghost.</em></h1>
+      <p>Send anonymous messages, attach a photo, or whisper a song with a note — like IG notes but more mysterious.</p>
+      <button class="btn-primary" onclick="showPage('signup')">Create My Link ✨</button>
+      <div class="hero-sub">🔒 Free forever · No account needed to send</div>
     </div>
     <div class="hero-visual">
       <div class="letter-card">
-        <span class="tag">💌 Secret</span>
-        <p>I've always admired how you carry yourself. You have no idea.</p>
+        <span class="tag">💌 Message</span>
+        <p>I've always admired how you carry yourself. Genuinely.</p>
         <div class="sender">— Anonymous</div>
       </div>
       <div class="letter-card">
-        <span class="tag">😂 Funny</span>
-        <p>You're the reason I laugh at inappropriate moments. No regrets.</p>
-        <div class="sender">— Anonymous</div>
+        <span class="tag music">🎵 Whisprnote</span>
+        <p>This song made me think of you the second it played.</p>
+        <div class="sender">— Anonymous · Lover, Taylor Swift</div>
       </div>
       <div class="letter-card">
-        <span class="tag">💬 Honest</span>
-        <p>Your advice last year genuinely changed things for me. Thank you.</p>
+        <span class="tag photo">📷 With photo</span>
+        <p>Saw this and instantly thought of you 🌸</p>
         <div class="sender">— Anonymous</div>
       </div>
     </div>
   </div>
+  <div class="features-strip">
+    <div class="feature-pill">✉️ Anonymous messages</div>
+    <div class="feature-pill">📷 Attach a photo</div>
+    <div class="feature-pill">🎵 Whisprnote — song + note</div>
+    <div class="feature-pill">🔍 Reveal sender</div>
+    <div class="feature-pill">🔒 100% private</div>
+  </div>
 </div>
 
-<!-- SIGN UP -->
+<!-- ════════════════════════════════════════ SIGN UP -->
 
 <div id="page-signup" class="page">
   <div class="auth-container">
     <button class="back-btn" onclick="showPage('landing')">← Back</button>
     <div class="auth-box">
       <h2>Create account</h2>
-      <p>Sign up to get your personal anonymous message link.</p>
+      <p>Get your personal anonymous message link and start receiving whispers.</p>
       <div class="error-msg" id="signupError"></div>
       <input class="input-field" type="email" id="signupEmail" placeholder="Email address">
       <input class="input-field" type="password" id="signupPassword" placeholder="Password (min 6 characters)">
@@ -403,14 +1126,14 @@ nav { padding: 1.2rem 1.5rem; }
   </div>
 </div>
 
-<!-- LOG IN -->
+<!-- ════════════════════════════════════════ LOG IN -->
 
 <div id="page-login" class="page">
   <div class="auth-container">
     <button class="back-btn" onclick="showPage('landing')">← Back</button>
     <div class="auth-box">
       <h2>Welcome back</h2>
-      <p>Log in to see your anonymous messages.</p>
+      <p>Log in to see who's been whispering to you.</p>
       <div class="error-msg" id="loginError"></div>
       <input class="input-field" type="email" id="loginEmail" placeholder="Email address">
       <input class="input-field" type="password" id="loginPassword" placeholder="Password">
@@ -420,51 +1143,58 @@ nav { padding: 1.2rem 1.5rem; }
   </div>
 </div>
 
-<!-- SET USERNAME -->
+<!-- ════════════════════════════════════════ SET USERNAME -->
 
 <div id="page-setup" class="page">
   <div class="auth-container">
     <div class="auth-box">
       <h2>Pick your username</h2>
-      <p>This is the link you'll share with everyone.</p>
+      <p>This becomes the link you share with everyone.</p>
       <div class="error-msg" id="setupError"></div>
       <div class="prefix-input">
-        <span class="prefix" id="sitePrefix">whispr.netlify.app/</span>
-        <input type="text" id="usernameInput" placeholder="yourname" maxlength="20">
+        <span class="prefix">whispr.app/</span>
+        <input type="text" id="usernameInput" placeholder="yourname" maxlength="20" onkeydown="if(event.key==='Enter') saveUsername()">
       </div>
-      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1.2rem">Letters, numbers and underscores only. Min 3 characters.</p>
+      <p style="font-size:0.76rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.5">Letters, numbers and underscores only. Min 3 characters.</p>
       <button class="full-btn" id="setupBtn" onclick="saveUsername()">Save & Go to Inbox →</button>
     </div>
   </div>
 </div>
 
-<!-- INBOX -->
+<!-- ════════════════════════════════════════ INBOX -->
 
 <div id="page-inbox" class="page">
   <div class="app-container">
     <h2 class="page-title" id="inboxTitle">Your Inbox</h2>
-    <p class="page-sub">Share your link and watch the messages arrive.</p>
+    <p class="page-sub">Share your link and watch the whispers arrive.</p>
 
 ```
 <div class="link-box">
-  <label>Your Link — Share This!</label>
+  <label>Your Link — Share This! 🔗</label>
   <div class="link-row">
     <input class="link-input" id="myLink" readonly>
-    <button class="copy-btn" onclick="copyLink()">Copy</button>
+    <button class="copy-btn" onclick="copyLink()">Copy ✨</button>
   </div>
 </div>
 
 <div class="upgrade-banner">
   <div>
     <h3>✨ Whispr Pro</h3>
-    <p>Reveal senders, no ads, unlimited messages.</p>
+    <p>Reveal senders · No ads · Unlimited everything</p>
   </div>
   <button class="upgrade-btn" onclick="showToast('Pro coming soon! 🚀')">$2.99/mo</button>
 </div>
 
-<p class="section-label">Messages</p>
+<div class="tabs">
+  <button class="tab-btn active" id="tab-messages" onclick="switchTab('messages')">💌 Messages</button>
+  <button class="tab-btn" id="tab-notes" onclick="switchTab('notes')">🎵 Whisprnotes</button>
+</div>
+
 <div id="messagesFeed" class="messages-feed">
-  <div class="loading"><div class="spinner"></div>Loading messages...</div>
+  <div class="loading"><div class="spinner"></div>Loading...</div>
+</div>
+<div id="notesFeed" class="messages-feed" style="display:none">
+  <div class="loading"><div class="spinner"></div>Loading...</div>
 </div>
 
 <br>
@@ -474,89 +1204,73 @@ nav { padding: 1.2rem 1.5rem; }
   </div>
 </div>
 
-<!-- SEND MESSAGE -->
+<!-- ════════════════════════════════════════ SEND PAGE -->
 
 <div id="page-send" class="page">
   <div class="app-container">
-    <h2 class="page-title">Send a message</h2>
-    <p class="page-sub">100% anonymous. They'll never know it's you.</p>
-    <div id="sendContent">
-      <div class="send-box">
-        <div class="recipient-badge">✉️ <span id="recipientName">someone</span></div>
-        <textarea class="msg-textarea" id="msgTextarea" placeholder="Write something honest, kind, or mysterious..." maxlength="500" oninput="updateChar()"></textarea>
-        <div class="char-count"><span id="charCount">0</span>/500</div>
-        <button class="send-btn" id="sendMsgBtn" onclick="sendMessage()" disabled>Send Anonymously →</button>
-        <p class="privacy-note">🔒 Your identity is completely hidden</p>
-      </div>
-    </div>
+    <h2 class="page-title">Send something</h2>
+    <p class="page-sub" id="sendSubtitle">Choose what to send anonymously.</p>
+
+```
+<div class="mode-selector">
+  <div class="mode-btn active-msg" id="mode-msg" onclick="selectMode('msg')">
+    <div class="mode-icon">✉️</div>
+    <div class="mode-label">Message</div>
+    <div class="mode-desc">Anonymous note</div>
+  </div>
+  <div class="mode-btn" id="mode-note" onclick="selectMode('note')">
+    <div class="mode-icon">🎵</div>
+    <div class="mode-label">Whisprnote</div>
+    <div class="mode-desc">Song + message</div>
   </div>
 </div>
 
+<div id="sendContent"></div>
+```
+
+  </div>
+</div>
+
+<audio id="audioPlayer"></audio>
+<input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handlePhotoSelect(this)">
+
 <script>
-  // ---- SUPABASE INIT ----
   const SUPABASE_URL = 'https://fgtlriiksbqepcszugde.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_iGnsMNU3RF4280bIA8yIBg_29JBdmlJ';
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let currentUser = null;
-  let currentUsername = null;
-  let sendToUsername = null;
+  let currentUser = null, currentUsername = null, sendToUsername = null;
+  let selectedSong = null, currentMode = 'msg', searchTimeout = null;
+  let attachedPhotoBase64 = null, attachedPhotoDataURL = null;
 
-  // ---- INIT ----
+  // ── INIT ──
   async function init() {
-    // Check if this is a /u/username URL
-    const path = window.location.pathname;
-    const match = path.match(/\/u\/([a-zA-Z0-9_]+)/);
-    if (match) {
-      sendToUsername = match[1];
-      showPage('send');
-      document.getElementById('recipientName').textContent = sendToUsername;
-      return;
-    }
-
-    // Check hash for username (for Netlify single page)
     const hash = window.location.hash;
-    const hashMatch = hash.match(/^#\/u\/([a-zA-Z0-9_]+)/);
-    if (hashMatch) {
-      sendToUsername = hashMatch[1];
+    const m = hash.match(/^#\/u\/([a-zA-Z0-9_]+)/);
+    if (m) {
+      sendToUsername = m[1];
+      document.getElementById('sendSubtitle').textContent = `Sending to @${sendToUsername} — they won't know it's you.`;
       showPage('send');
-      document.getElementById('recipientName').textContent = sendToUsername;
+      renderSendMode();
       return;
     }
-
     const { data: { session } } = await db.auth.getSession();
-    if (session) {
-      currentUser = session.user;
-      await loadUserProfile();
-    }
+    if (session) { currentUser = session.user; await loadUserProfile(); }
   }
 
   async function loadUserProfile() {
     const { data } = await db.from('profiles').select('username').eq('id', currentUser.id).single();
-    if (data && data.username) {
-      currentUsername = data.username;
-      updateNav(true);
-      showInbox();
-    } else {
-      updateNav(true);
-      showPage('setup');
-    }
+    if (data && data.username) { currentUsername = data.username; updateNav(true); showInbox(); }
+    else { updateNav(true); showPage('setup'); }
   }
 
   function updateNav(loggedIn) {
-    const nav = document.getElementById('navRight');
-    if (loggedIn) {
-      nav.innerHTML = `<button class="nav-btn" onclick="showInbox()">My Inbox</button>`;
-    } else {
-      nav.innerHTML = `
-        <button class="nav-btn outline" onclick="showPage('login')">Log In</button>
-        <button class="nav-btn" onclick="showPage('signup')">Sign Up</button>
-      `;
-    }
+    document.getElementById('navRight').innerHTML = loggedIn
+      ? `<button class="nav-btn" onclick="showInbox()">My Inbox</button>`
+      : `<button class="nav-btn outline" onclick="showPage('login')">Log In</button><button class="nav-btn" onclick="showPage('signup')">Sign Up</button>`;
   }
 
-  // ---- PAGES ----
   function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + name).classList.add('active');
@@ -564,35 +1278,34 @@ nav { padding: 1.2rem 1.5rem; }
   }
 
   function showInbox() {
-    const siteUrl = window.location.origin + window.location.pathname;
-    document.getElementById('myLink').value = siteUrl + '#/u/' + currentUsername;
+    const url = window.location.origin + window.location.pathname;
+    document.getElementById('myLink').value = url + '#/u/' + currentUsername;
     document.getElementById('inboxTitle').textContent = 'Hey, ' + currentUsername + ' 👋';
     showPage('inbox');
     loadMessages();
+    loadNotes();
   }
 
-  // ---- AUTH ----
+  function switchTab(tab) {
+    document.getElementById('tab-messages').classList.toggle('active', tab === 'messages');
+    document.getElementById('tab-notes').classList.toggle('active', tab === 'notes');
+    document.getElementById('messagesFeed').style.display = tab === 'messages' ? 'flex' : 'none';
+    document.getElementById('notesFeed').style.display = tab === 'notes' ? 'flex' : 'none';
+  }
+
+  // ── AUTH ──
   async function signUp() {
     const email = document.getElementById('signupEmail').value.trim();
     const password = document.getElementById('signupPassword').value;
     const btn = document.getElementById('signupBtn');
     const err = document.getElementById('signupError');
     err.textContent = '';
-
     if (!email || !password) { err.textContent = 'Please fill in all fields.'; return; }
     if (password.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
-
     btn.disabled = true; btn.textContent = 'Creating account...';
     const { data, error } = await db.auth.signUp({ email, password });
-
-    if (error) {
-      err.textContent = error.message;
-      btn.disabled = false; btn.textContent = 'Create Account →';
-      return;
-    }
-
-    currentUser = data.user;
-    updateNav(true);
+    if (error) { err.textContent = error.message; btn.disabled = false; btn.textContent = 'Create Account →'; return; }
+    currentUser = data.user; updateNav(true);
     btn.disabled = false; btn.textContent = 'Create Account →';
     showPage('setup');
   }
@@ -603,152 +1316,433 @@ nav { padding: 1.2rem 1.5rem; }
     const btn = document.getElementById('loginBtn');
     const err = document.getElementById('loginError');
     err.textContent = '';
-
     if (!email || !password) { err.textContent = 'Please fill in all fields.'; return; }
-
     btn.disabled = true; btn.textContent = 'Logging in...';
     const { data, error } = await db.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      err.textContent = 'Wrong email or password.';
-      btn.disabled = false; btn.textContent = 'Log In →';
-      return;
-    }
-
-    currentUser = data.user;
-    btn.disabled = false; btn.textContent = 'Log In →';
+    if (error) { err.textContent = 'Wrong email or password.'; btn.disabled = false; btn.textContent = 'Log In →'; return; }
+    currentUser = data.user; btn.disabled = false; btn.textContent = 'Log In →';
     await loadUserProfile();
   }
 
   async function logOut() {
     await db.auth.signOut();
     currentUser = null; currentUsername = null;
-    updateNav(false);
-    showPage('landing');
+    updateNav(false); showPage('landing');
   }
 
-  // ---- USERNAME SETUP ----
   async function saveUsername() {
     const username = document.getElementById('usernameInput').value.trim().toLowerCase();
     const btn = document.getElementById('setupBtn');
     const err = document.getElementById('setupError');
     err.textContent = '';
-
     if (!username || username.length < 3) { err.textContent = 'Min 3 characters.'; return; }
     if (!/^[a-zA-Z0-9_]+$/.test(username)) { err.textContent = 'Only letters, numbers, underscores.'; return; }
-
     btn.disabled = true; btn.textContent = 'Saving...';
-
-    // Check if username taken
     const { data: existing } = await db.from('profiles').select('id').eq('username', username).single();
-    if (existing) {
-      err.textContent = 'That username is taken. Try another!';
-      btn.disabled = false; btn.textContent = 'Save & Go to Inbox →';
-      return;
-    }
-
+    if (existing) { err.textContent = 'That username is taken!'; btn.disabled = false; btn.textContent = 'Save & Go to Inbox →'; return; }
     const { error } = await db.from('profiles').upsert({ id: currentUser.id, username, email: currentUser.email });
-    if (error) {
-      err.textContent = 'Something went wrong. Try again.';
-      btn.disabled = false; btn.textContent = 'Save & Go to Inbox →';
-      return;
-    }
-
-    currentUsername = username;
-    btn.disabled = false; btn.textContent = 'Save & Go to Inbox →';
+    if (error) { err.textContent = 'Something went wrong.'; btn.disabled = false; btn.textContent = 'Save & Go to Inbox →'; return; }
+    currentUsername = username; btn.disabled = false; btn.textContent = 'Save & Go to Inbox →';
     showInbox();
   }
 
-  // ---- MESSAGES ----
+  // ── LOAD MESSAGES ──
   async function loadMessages() {
     const feed = document.getElementById('messagesFeed');
     feed.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
-
-    const { data, error } = await db.from('messages')
+    const { data } = await db.from('messages')
       .select('*')
       .eq('recipient_username', currentUsername)
       .order('created_at', { ascending: false });
 
-    if (error || !data || data.length === 0) {
+    if (!data || data.length === 0) {
       feed.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>No messages yet.<br>Share your link to get started!</p></div>`;
       return;
     }
 
     feed.innerHTML = data.map((m, i) => `
-      <div class="msg-card" style="animation-delay:${i * 0.08}s">
+      <div class="msg-card" style="animation-delay:${i * 0.07}s">
         <div class="msg-text">${escapeHtml(m.content)}</div>
+        ${m.photo_url ? `<div class="msg-photo"><img src="${escapeHtml(m.photo_url)}" alt="Attached photo" loading="lazy"></div>` : ''}
         <div class="msg-meta">
           <span class="msg-time">${timeAgo(m.created_at)}</span>
           <button class="reveal-btn" onclick="openRevealModal()">👁 Reveal sender</button>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
-  async function sendMessage() {
-    const content = document.getElementById('msgTextarea').value.trim();
-    if (!content || !sendToUsername) return;
+  // ── LOAD NOTES ──
+  async function loadNotes() {
+    const feed = document.getElementById('notesFeed');
+    feed.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+    const { data } = await db.from('whisprnotes')
+      .select('*')
+      .eq('recipient_username', currentUsername)
+      .order('created_at', { ascending: false });
 
-    const btn = document.getElementById('sendMsgBtn');
-    btn.disabled = true; btn.textContent = 'Sending...';
-
-    const { error } = await db.from('messages').insert({
-      recipient_username: sendToUsername,
-      content: content
-    });
-
-    if (error) {
-      btn.disabled = false; btn.textContent = 'Send Anonymously →';
-      showToast('Something went wrong. Try again.');
+    if (!data || data.length === 0) {
+      feed.innerHTML = `<div class="empty-state"><div class="icon">🎵</div><p>No Whisprnotes yet.<br>Share your link so someone can send you a song!</p></div>`;
       return;
     }
 
-    document.getElementById('sendContent').innerHTML = `
-      <div class="success-screen">
-        <div class="success-icon">💌</div>
-        <h2>Message sent!</h2>
-        <p>Your anonymous message is on its way.<br>They'll never know it was you.</p>
-        <button class="btn-primary" style="margin-top:1.5rem" onclick="location.reload()">Send Another</button>
+    feed.innerHTML = data.map((n, i) => `
+      <div class="note-card" style="animation-delay:${i * 0.07}s">
+        <div class="note-badge">🎵 Whisprnote</div>
+        <div class="song-info">
+          <div class="song-art">
+            ${n.song_art ? `<img src="${escapeHtml(n.song_art)}" alt="">` : '🎵'}
+          </div>
+          <div class="song-details">
+            <div class="song-name">${escapeHtml(n.song_name)}</div>
+            <div class="song-artist">${escapeHtml(n.song_artist)}</div>
+          </div>
+          ${n.preview_url ? `<button class="play-btn" onclick="playPreview('${escapeHtml(n.preview_url)}', this)" title="Play preview">▶</button>` : ''}
+        </div>
+        <div class="note-message">${escapeHtml(n.message)}</div>
+        ${n.photo_url ? `<div class="note-photo"><img src="${escapeHtml(n.photo_url)}" alt="Attached photo" loading="lazy"></div>` : ''}
+        <div class="note-meta">
+          <span class="note-time">${timeAgo(n.created_at)}</span>
+          <button class="reveal-btn" onclick="openRevealModal()">👁 Reveal sender</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── SEND MODE SELECTOR ──
+  function selectMode(mode) {
+    currentMode = mode;
+    document.getElementById('mode-msg').className = 'mode-btn' + (mode === 'msg' ? ' active-msg' : '');
+    document.getElementById('mode-note').className = 'mode-btn' + (mode === 'note' ? ' active-note' : '');
+    attachedPhotoBase64 = null;
+    attachedPhotoDataURL = null;
+    renderSendMode();
+  }
+
+  function renderSendMode() {
+    const c = document.getElementById('sendContent');
+    if (currentMode === 'msg') {
+      c.innerHTML = `
+        <div class="send-box">
+          <div class="recipient-badge">✉️ To @${escapeHtml(sendToUsername || 'someone')}</div>
+
+          <textarea class="msg-textarea" id="msgTextarea"
+            placeholder="Write something honest, kind, or mysterious..."
+            maxlength="500" oninput="updateChar()"></textarea>
+
+```
+      <div class="char-count"><span id="charCount">0</span>/500</div>
+
+      <div class="photo-attach-area">
+        <div class="photo-attach-label">📷 Attach a photo <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <div id="photoPreviewMsg" style="display:none" class="photo-preview-wrap" style="margin-bottom:0.6rem">
+          <img id="photoPreviewImgMsg" src="" alt="Preview">
+          <button class="photo-remove-btn" onclick="removePhoto('msg')">✕</button>
+        </div>
+        <button class="photo-upload-btn" id="photoUploadBtnMsg" onclick="document.getElementById('photoFileInput').setAttribute('data-target','msg'); document.getElementById('photoFileInput').click()">
+          📷 Choose a photo to attach
+        </button>
       </div>
-    `;
+
+      <button class="send-btn" id="sendMsgBtn" onclick="sendMessage()" disabled>Send Anonymously →</button>
+      <p class="privacy-note">🔒 Your identity is completely hidden</p>
+    </div>`;
+} else {
+  selectedSong = null;
+  c.innerHTML = `
+    <div class="send-box">
+      <div class="recipient-badge music">🎵 Whisprnote to @${escapeHtml(sendToUsername || 'someone')}</div>
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.9rem;line-height:1.5">Search for a song that matches your vibe, then write a message to go with it.</p>
+
+      <div id="selectedSongPreview" style="display:none"></div>
+      <div class="song-search-box" id="songSearchBox">
+        <input class="song-search-input" id="songSearchInput"
+          placeholder="🔍 Search for a song..." oninput="searchSongs(this.value)">
+        <div class="song-results" id="songResults"></div>
+      </div>
+
+      <textarea class="msg-textarea" id="noteTextarea"
+        placeholder="Write a message to go with this song..."
+        maxlength="300" oninput="updateNoteChar()" style="margin-top:0.2rem"></textarea>
+      <div class="char-count"><span id="noteCharCount">0</span>/300</div>
+
+      <div class="photo-attach-area">
+        <div class="photo-attach-label">📷 Attach a photo <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <div id="photoPreviewNote" style="display:none" class="photo-preview-wrap">
+          <img id="photoPreviewImgNote" src="" alt="Preview">
+          <button class="photo-remove-btn" onclick="removePhoto('note')">✕</button>
+        </div>
+        <button class="photo-upload-btn" id="photoUploadBtnNote" onclick="document.getElementById('photoFileInput').setAttribute('data-target','note'); document.getElementById('photoFileInput').click()">
+          📷 Choose a photo to attach
+        </button>
+      </div>
+
+      <button class="send-btn purple" id="sendNoteBtn" onclick="sendNote()" disabled>Send Whisprnote →</button>
+      <p class="privacy-note">🔒 Your identity is completely hidden</p>
+    </div>`;
+}
+```
+
+}
+
+// ── PHOTO HANDLING ──
+function handlePhotoSelect(input) {
+const file = input.files[0];
+if (!file) return;
+if (file.size > 5 * 1024 * 1024) { showToast(‘Photo must be under 5MB’); input.value = ‘’; return; }
+
+```
+const reader = new FileReader();
+reader.onload = function(e) {
+  attachedPhotoDataURL = e.target.result;
+  attachedPhotoBase64 = e.target.result.split(',')[1];
+
+  const target = input.getAttribute('data-target') || currentMode;
+  const suffix = target === 'msg' ? 'Msg' : 'Note';
+
+  const previewWrap = document.getElementById('photoPreview' + suffix);
+  const previewImg = document.getElementById('photoPreviewImg' + suffix);
+  const uploadBtn = document.getElementById('photoUploadBtn' + suffix);
+
+  if (previewWrap && previewImg) {
+    previewImg.src = attachedPhotoDataURL;
+    previewWrap.style.display = 'block';
+    previewWrap.style.marginBottom = '0.6rem';
+    if (uploadBtn) uploadBtn.style.display = 'none';
   }
+};
+reader.readAsDataURL(file);
+input.value = '';
+```
 
-  // ---- HELPERS ----
-  function updateChar() {
-    const len = document.getElementById('msgTextarea').value.length;
-    document.getElementById('charCount').textContent = len;
-    document.getElementById('sendMsgBtn').disabled = len < 5;
-  }
+}
 
-  function copyLink() {
-    const val = document.getElementById('myLink').value;
-    navigator.clipboard.writeText(val).catch(() => {});
-    showToast('Link copied! Share it everywhere 🎉');
-  }
+function removePhoto(target) {
+attachedPhotoBase64 = null;
+attachedPhotoDataURL = null;
+const suffix = target === ‘msg’ ? ‘Msg’ : ‘Note’;
+const previewWrap = document.getElementById(‘photoPreview’ + suffix);
+const uploadBtn = document.getElementById(‘photoUploadBtn’ + suffix);
+if (previewWrap) previewWrap.style.display = ‘none’;
+if (uploadBtn) uploadBtn.style.display = ‘flex’;
+}
 
-  function openRevealModal() { document.getElementById('revealModal').classList.add('open'); }
-  function closeModal() { document.getElementById('revealModal').classList.remove('open'); }
+// Upload photo to Supabase Storage, returns public URL
+async function uploadPhoto() {
+if (!attachedPhotoBase64) return null;
+try {
+const ext = attachedPhotoDataURL.split(’;’)[0].split(’/’)[1] || ‘jpg’;
+const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+const byteString = atob(attachedPhotoBase64);
+const bytes = new Uint8Array(byteString.length);
+for (let i = 0; i < byteString.length; i++) bytes[i] = byteString.charCodeAt(i);
+const blob = new Blob([bytes], { type: ‘image/’ + ext });
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2800);
-  }
+```
+  const { data, error } = await db.storage
+    .from('whispr-photos')
+    .upload(filename, blob, { contentType: 'image/' + ext, upsert: false });
 
-  function escapeHtml(text) {
-    return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  if (error) { console.error('Upload error', error); return null; }
 
-  function timeAgo(dateStr) {
-    const diff = (Date.now() - new Date(dateStr)) / 1000;
-    if (diff < 60) return 'Just now';
-    if (diff < 3600) return Math.floor(diff/60) + ' min ago';
-    if (diff < 86400) return Math.floor(diff/3600) + ' hours ago';
-    return Math.floor(diff/86400) + ' days ago';
-  }
+  const { data: urlData } = db.storage.from('whispr-photos').getPublicUrl(filename);
+  return urlData?.publicUrl || null;
+} catch (e) {
+  console.error('Photo upload failed', e);
+  return null;
+}
+```
 
-  // ---- START ----
-  init();
+}
+
+// ── SONG SEARCH ──
+async function searchSongs(query) {
+clearTimeout(searchTimeout);
+const results = document.getElementById(‘songResults’);
+if (!query || query.length < 2) { results.innerHTML = ‘’; return; }
+results.innerHTML = ‘<div style="padding:0.8rem 1rem;font-size:0.8rem;color:var(--muted)">Searching…</div>’;
+searchTimeout = setTimeout(async () => {
+try {
+const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&limit=6`);
+const data = await res.json();
+if (!data.results || !data.results.length) {
+results.innerHTML = ‘<div style="padding:0.8rem 1rem;font-size:0.8rem;color:var(--muted)">No songs found</div>’;
+return;
+}
+results.innerHTML = data.results.map(s => ` <div class="song-result-item" onclick='selectSong(${JSON.stringify(s).replace(/'/g, "&#39;")})'> <img style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0" src="${s.artworkUrl60}" alt=""> <div> <div class="song-result-name">${escapeHtml(s.trackName)}</div> <div class="song-result-artist">${escapeHtml(s.artistName)}</div> </div> </div>`).join(’’);
+} catch(e) {
+results.innerHTML = ‘<div style="padding:0.8rem 1rem;font-size:0.8rem;color:var(--muted)">Search failed. Try again.</div>’;
+}
+}, 380);
+}
+
+function selectSong(song) {
+selectedSong = song;
+document.getElementById(‘songSearchBox’).style.display = ‘none’;
+const preview = document.getElementById(‘selectedSongPreview’);
+preview.style.display = ‘flex’;
+preview.className = ‘selected-song-preview’;
+preview.innerHTML = ` <img src="${song.artworkUrl60}" style="width:42px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0" alt=""> <div> <div style="font-size:0.87rem;font-weight:500">${escapeHtml(song.trackName)}</div> <div style="font-size:0.74rem;opacity:0.55;margin-top:0.1rem">${escapeHtml(song.artistName)}</div> </div> <button class="clear-song" onclick="clearSong()" title="Remove song">✕</button>`;
+updateNoteChar();
+}
+
+function clearSong() {
+selectedSong = null;
+document.getElementById(‘songSearchBox’).style.display = ‘block’;
+document.getElementById(‘selectedSongPreview’).style.display = ‘none’;
+const sr = document.getElementById(‘songResults’);
+const si = document.getElementById(‘songSearchInput’);
+if (sr) sr.innerHTML = ‘’;
+if (si) si.value = ‘’;
+updateNoteChar();
+}
+
+// ── CHAR COUNTS ──
+function updateChar() {
+const ta = document.getElementById(‘msgTextarea’);
+const len = ta ? ta.value.length : 0;
+const cc = document.getElementById(‘charCount’);
+const btn = document.getElementById(‘sendMsgBtn’);
+if (cc) cc.textContent = len;
+if (btn) btn.disabled = len < 3;
+}
+
+function updateNoteChar() {
+const ta = document.getElementById(‘noteTextarea’);
+if (!ta) return;
+const len = ta.value.length;
+const cc = document.getElementById(‘noteCharCount’);
+const btn = document.getElementById(‘sendNoteBtn’);
+if (cc) cc.textContent = len;
+if (btn) btn.disabled = len < 3 || !selectedSong;
+}
+
+// ── SEND MESSAGE ──
+async function sendMessage() {
+const ta = document.getElementById(‘msgTextarea’);
+const content = ta ? ta.value.trim() : ‘’;
+if (!content || !sendToUsername) return;
+
+```
+const btn = document.getElementById('sendMsgBtn');
+btn.disabled = true; btn.textContent = 'Sending…';
+
+let photoUrl = null;
+if (attachedPhotoBase64) {
+  btn.textContent = 'Uploading photo…';
+  photoUrl = await uploadPhoto();
+}
+
+const payload = { recipient_username: sendToUsername, content };
+if (photoUrl) payload.photo_url = photoUrl;
+
+const { error } = await db.from('messages').insert(payload);
+if (error) {
+  btn.disabled = false; btn.textContent = 'Send Anonymously →';
+  showToast('Something went wrong. Try again.');
+  return;
+}
+showSuccess('💌', 'Message sent!', 'Your anonymous whisper is on its way.');
+```
+
+}
+
+// ── SEND WHISPRNOTE ──
+async function sendNote() {
+const ta = document.getElementById(‘noteTextarea’);
+const message = ta ? ta.value.trim() : ‘’;
+if (!message || !selectedSong || !sendToUsername) return;
+
+```
+const btn = document.getElementById('sendNoteBtn');
+btn.disabled = true; btn.textContent = 'Sending…';
+
+let photoUrl = null;
+if (attachedPhotoBase64) {
+  btn.textContent = 'Uploading photo…';
+  photoUrl = await uploadPhoto();
+}
+
+const payload = {
+  recipient_username: sendToUsername,
+  message,
+  song_name: selectedSong.trackName,
+  song_artist: selectedSong.artistName,
+  song_art: selectedSong.artworkUrl60,
+  preview_url: selectedSong.previewUrl || null
+};
+if (photoUrl) payload.photo_url = photoUrl;
+
+const { error } = await db.from('whisprnotes').insert(payload);
+if (error) {
+  btn.disabled = false; btn.textContent = 'Send Whisprnote →';
+  showToast('Something went wrong. Try again.');
+  return;
+}
+showSuccess('🎵', 'Whisprnote sent!', 'Your anonymous song note is on its way.');
+```
+
+}
+
+// ── HELPERS ──
+function showSuccess(icon, title, msg) {
+document.getElementById(‘sendContent’).innerHTML = ` <div class="success-screen"> <div class="success-icon">${icon}</div> <h2>${title}</h2> <p>${msg}<br><span style="font-style:italic;font-family:'Lora',serif">They'll never know it was you 👻</span></p> <button class="btn-primary" style="margin-top:1.8rem" onclick="resetSend()">Send Another</button> </div>`;
+}
+
+function resetSend() {
+attachedPhotoBase64 = null;
+attachedPhotoDataURL = null;
+selectedSong = null;
+renderSendMode();
+}
+
+function playPreview(url, btn) {
+const audio = document.getElementById(‘audioPlayer’);
+if (audio.src === url && !audio.paused) {
+audio.pause(); btn.textContent = ‘▶’; return;
+}
+// Stop any other playing
+document.querySelectorAll(’.play-btn’).forEach(b => b.textContent = ‘▶’);
+audio.src = url; audio.play(); btn.textContent = ‘⏸’;
+audio.onended = () => btn.textContent = ‘▶’;
+}
+
+function copyLink() {
+navigator.clipboard.writeText(document.getElementById(‘myLink’).value).catch(() => {});
+showToast(‘Link copied! Share it everywhere 🎉’);
+}
+
+function openRevealModal() { document.getElementById(‘revealModal’).classList.add(‘open’); }
+function closeModal() { document.getElementById(‘revealModal’).classList.remove(‘open’); }
+
+// Close modal on overlay click
+document.getElementById(‘revealModal’).addEventListener(‘click’, function(e) {
+if (e.target === this) closeModal();
+});
+
+function showToast(msg) {
+const t = document.getElementById(‘toast’);
+t.textContent = msg; t.classList.add(‘show’);
+setTimeout(() => t.classList.remove(‘show’), 2800);
+}
+
+function escapeHtml(text) {
+if (!text) return ‘’;
+return String(text)
+.replace(/&/g, ‘&’)
+.replace(/</g, ‘<’)
+.replace(/>/g, ‘>’)
+.replace(/”/g, ‘"’);
+}
+
+function timeAgo(d) {
+const diff = (Date.now() - new Date(d)) / 1000;
+if (diff < 60) return ‘Just now’;
+if (diff < 3600) return Math.floor(diff / 60) + ’ min ago’;
+if (diff < 86400) return Math.floor(diff / 3600) + ‘h ago’;
+if (diff < 86400 * 7) return Math.floor(diff / 86400) + ‘d ago’;
+return new Date(d).toLocaleDateString(‘en-US’, { month: ‘short’, day: ‘numeric’ });
+}
+
+init();
 </script>
 
 </body>
